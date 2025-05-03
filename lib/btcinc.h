@@ -93,6 +93,7 @@ hash_t hashcpy(hash_t prior);
 
 /* BTCinC API */
 pow_t *do_pow(chain_head_t *head);
+bool check_pow(chain_head_t *head, pow_t *pow);
 chain_tail_t *genesis();
 chain_head_t *import_blockchain(char *filename);
 chain_tail_t *tail(chain_head_t *prev_head);

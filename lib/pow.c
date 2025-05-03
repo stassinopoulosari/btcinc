@@ -5,6 +5,7 @@ bool check_pow(chain_head_t *head, pow_t *pow) {
     size_t cursor, elements_to_check = POW_DIFFICULTY / 8,
                    digits_in_last_element = POW_DIFFICULTY % 8;
     bool pow_valid;
+    pow = pow == NULL ? head->pow : pow;
     /* Low proof of work threshold */
     hash_t candidate_hash = hash_chain_head(head, pow);
     /* Check that each of the first POW_DIFFICULTY digits of the hash are zero */
