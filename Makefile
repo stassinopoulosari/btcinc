@@ -1,10 +1,12 @@
 container_tag := btcinc
+
 src_path := btcinc
-dependencies_math_t := $(src_path)/lib/bigrsa/math_t/*.c
-dependencies_bigrsa := $(src_path)/lib/bigrsa/*.c $(dependencies_math_t)
-dependencies_sha256 := $(src_path)/lib/sha256/*.c
-dependencies_lib := $(src_path)/lib/*.c
-dependencies := $(src_path)/*.c $(dependencies_lib) $(dependencies_bigrsa) $(dependencies_sha256)
+primary:= $(src_path)/btcinc.c
+lib_path := $(src_path)/lib
+dependencies_math_t := $(lib_path)/bigrsa/math_t/*.c
+dependencies_bigrsa := $(lib_path)/bigrsa/*.c $(dependencies_math_t)
+dependencies_sha256 := $(lib_path)/sha256/*.c
+dependencies := $(lib_path)/*.c $(dependencies_lib) $(dependencies_bigrsa) $(dependencies_sha256)
 gcc_flags := --std=c89 -Wall -Wextra -Werror -Wpedantic -O2 -lgmp
 
 outie: podman_run
@@ -23,4 +25,4 @@ innie: innie_run
 innie_run: innie_compile
 
 innie_compile:
-	gcc $(dependencies) -o btcinc.o $(gcc_flags)
+	gcc $(primary) $(dependencies) -o btcinc.o $(gcc_flags)
