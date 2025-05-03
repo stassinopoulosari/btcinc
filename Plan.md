@@ -22,7 +22,7 @@ After last message, 2 blank lines.
 1. `HEAD`
 2. Previous message hash
 3. Timestamp of Tail
-3. Proof of work: Content which, when added to 2 + 3, has a first digit of 0.
+3. Proof of work: Content which, when added to 2 + 3, has a first hash digit of 0.
 4. Hash of 2 + 3 + 4
 5. RSA signature of hash
 6. Public key of RSA signature

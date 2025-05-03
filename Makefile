@@ -1,9 +1,10 @@
 container_tag := btcinc
 src_path := btcinc
 dependencies_math_t := $(src_path)/bigrsa/math_t/*.c
-dependencies_bigrsa := $(src_path)/bigrsa/*.c $(depndencies_math_t)
+dependencies_bigrsa := $(src_path)/bigrsa/*.c $(dependencies_math_t)
 dependencies_sha256 := $(src_path)/sha256/*.c
-dependencies := $(src_path)/*.c $(dependencies_bigrsa) $(dependencies_sha256)
+dependencies_lib := $(src_path)/lib/*.c
+dependencies := $(src_path)/*.c $(dependencies_lib) $(dependencies_bigrsa) $(dependencies_sha256)
 gcc_flags := --std=c89 -Wall -Wextra -Werror -Wpedantic -O2 -lgmp
 
 outie: podman_run

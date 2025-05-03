@@ -125,10 +125,10 @@ uint32_t *hash(void *input, size_t input_size) {
         if(added_terminator == 1) {
             chunk_size = 0;
         } else {
-        	chunk_size = (input_size - cursor) > 64 ?
-         		(input_size - cursor) : 64;
-         	memcpy(chunk, input + cursor, chunk_size);
-          	cursor += chunk_size;
+            chunk_size = (input_size - cursor) > 64 ?
+                         (input_size - cursor) : 64;
+            memcpy(chunk, input + cursor, chunk_size);
+            cursor += chunk_size;
         }
         /* Chunk size == 64 --> Move on to the next chunk, even if the size is 0
            Chunk size on (56, 64) --> Add 128 terminator and add an empty chunk
