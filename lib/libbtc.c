@@ -1,9 +1,5 @@
-#import "btcinc.h"
-#include <stdbool.h>
+#include "btcinc.h"
 
-void *memseek(void *pointer, size_t pos) {
-    return ((char *)pointer) + pos;
-}
 
 uint4096_t make_4096_t() {
     uint4096_t out;
@@ -12,9 +8,8 @@ uint4096_t make_4096_t() {
     return out;
 }
 
-void free_4096_t(uint4096_t *to_free) {
-    free(to_free->contents);
-    free(to_free);
+void free_4096_t(uint4096_t to_free) {
+    free(to_free.contents);
 }
 
 void free_hash(hash_t to_free) {
@@ -46,11 +41,13 @@ hash_t hash_signature(signature_t signature) {
 
 signature_t sign_hash(hash_t *hash_to_sign, keyset_t *keyset) {
     signature_t output;
-    uint4096_t signature_input = make_4096_t(), signature_output = make_4096_t();
+    uint4096_t signature_input, signature_output;
+    signature_input = make_4096_t();
+    signature_output = make_4096_t();
     memcpy(signature_input.contents, hash_to_sign->digest, DIGEST_SIZE);
     big_modexp(signature_input.contents, keyset->private_key.contents,
                keyset->public_key.contents, signature_output.contents);
-    free_4096_t(&signature_input);
+    free_4096_t(signature_input);
     output.public_key = keyset->public_key;
     output.signature = signature_output;
     return output;
@@ -83,11 +80,12 @@ hash_t hash_chain_head(chain_head_t *chain_head, pow_t *pow) {
     hash_t chain_head_hash;
     uint32_t *digest;
     void *hash_input;
+    size_t hash_input_size;
     if (pow == NULL) {
         pow = chain_head->pow;
     }
     /* digest of previous message + Hash message content + timestamp */
-    size_t hash_input_size = pow->pow_size + DIGEST_SIZE + sizeof(uint64_t);
+    hash_input_size = pow->pow_size + DIGEST_SIZE + sizeof(uint64_t);
     hash_input = malloc(hash_input_size);
     memcpy(hash_input, chain_head->previous_hash.digest, DIGEST_SIZE);
     memcpy(memseek(hash_input, DIGEST_SIZE), pow->pow, pow->pow_size);
@@ -137,7 +135,6 @@ chain_t *chain_add(chain_t *chain, chain_content_t *content_to_add,
 chain_head_t *commit_chain(chain_t *chain, keyset_t *keyset) {
     chain_head_t *head = malloc(sizeof(chain_head_t));
     hash_t head_hash;
-    pow_t *pow;
     head->previous_hash = hash_signature(chain->signature);
     head->previous = chain;
     head->timestamp = (uint64_t)time(NULL);

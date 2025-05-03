@@ -35,17 +35,20 @@ uint64_t t_mul(size_t ELEM, uint64_t *base, uint64_t *multiplier,
                uint64_t *out) {
     size_t base_index, multiplier_index;
     size_t bytes = ELEM * sizeof(uint64_t);
+    uint32_t carry32, *base32, *out32, *multiplier32, *temp32;
     /* We want an output array that'ELEM the maximum possible size, we can trim
      * later
      */
-    uint64_t biggerout[ELEM * 2 + 1];
+    uint64_t temp, *biggerout = malloc(ELEM * 2 + 1 * sizeof(uint64_t)),
+                    out_carry;
     memset(biggerout, 0, bytes);
     /* Use a 64-bit variable to hold temporary results */
-    uint64_t temp;
-    uint32_t carry32;
+
     /* Create 32-bit aliases so we can pretend this is a 32-bit problem */
-    uint32_t *base32 = (uint32_t *)base, *multiplier32 = (uint32_t *)multiplier,
-                                          *out32 = (uint32_t *)biggerout, *temp32 = (uint32_t *)&temp;
+    base32 = (uint32_t *)base;
+    multiplier32 = (uint32_t *)multiplier;
+    out32 = (uint32_t *)biggerout;
+    temp32 = (uint32_t *)&temp;
     for (base_index = 0; base_index < ELEM * 2; base_index++) {
         /* Reset the carry */
         carry32 = 0;
@@ -72,7 +75,9 @@ uint64_t t_mul(size_t ELEM, uint64_t *base, uint64_t *multiplier,
     /* Ignore my note here before */
     memcpy(out, biggerout, bytes);
     /* Carry bit! */
-    return biggerout[ELEM + 1];
+    out_carry = biggerout[ELEM + 1];
+    free(biggerout);
+    return out_carry;
 }
 
 /* biggerDiv helper functions - from assignment */
@@ -141,10 +146,10 @@ uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
     /* I decided it'ELEM probably not such a hot idea to do things partially in
      * place
      */
-    uint64_t working_numerator[ELEM];
-    uint64_t working_denominator[ELEM];
+    uint64_t *working_numerator = malloc(bytes);
+    uint64_t *working_denominator = malloc(bytes);
     /* Doing biggersub in place seems like a bad idea */
-    uint64_t swap[ELEM];
+    uint64_t *swap = malloc(bytes);
 
     size_t iterator = 0,
            /* Length of quotient in bits */
@@ -167,6 +172,9 @@ uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
         /* Zero */
         memset(quotient, 0, bytes);
         memcpy(remainder, working_numerator, bytes);
+        free(quotient);
+        free(working_numerator);
+        free(working_denominator);
         return 0;
     }
 
@@ -199,26 +207,28 @@ uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
 }
 
 uint64_t t_quo(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *quo) {
-    uint64_t rem[ELEM];
+    uint64_t *rem = malloc(ELEM * sizeof(uint64_t));
     t_div(ELEM, num, den, quo, rem);
+    free(rem);
     return 0;
 }
 
 uint64_t t_rem(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *rem) {
-    uint64_t quo[ELEM];
+    uint64_t *quo = malloc(ELEM * sizeof(uint64_t));
     t_div(ELEM, num, den, quo, rem);
+    free(quo);
     return 0;
 }
 
-int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, uint64_t *big, uint64_t *bigger) {
+int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, const uint64_t *big,
+             uint64_t *bigger) {
     /* Clear output buffer */
     memset(bigger, 0, ELEM_OUT * sizeof(uint64_t));
     memcpy(bigger, big, ELEM_IN * sizeof(uint64_t));
     return 0;
 }
 
-uint64_t t_sizedown(size_t ELEM_OUT, uint64_t *bigger,
-                    uint64_t *big) {
+uint64_t t_sizedown(size_t ELEM_OUT, const uint64_t *bigger, uint64_t *big) {
     /* Clear output buffer */
     size_t bytes = ELEM_OUT * sizeof(uint64_t);
     memset(big, 0, bytes);
@@ -228,11 +238,12 @@ uint64_t t_sizedown(size_t ELEM_OUT, uint64_t *bigger,
 
 uint64_t t_add_signed(size_t ELEM, uint64_t *in0, short in0_sign, uint64_t *in1,
                       short in1_sign, uint64_t *sum, short *outsign) {
+    short comparison;
     if (in0_sign == in1_sign) {
         *outsign = in0_sign;
         return t_add(ELEM, in0, in1, sum);
     }
-    short comparison = t_comparison(ELEM, in0, in1);
+    comparison = t_comparison(ELEM, in0, in1);
     if (comparison == 0) {
         *outsign = 0;
         memset(sum, 0, ELEM * sizeof(uint64_t));
@@ -246,12 +257,13 @@ uint64_t t_add_signed(size_t ELEM, uint64_t *in0, short in0_sign, uint64_t *in1,
 }
 uint64_t t_sub_signed(size_t ELEM, uint64_t *in0, short in0_sign, uint64_t *in1,
                       short in1_sign, uint64_t *out, short *outsign) {
+    short comparison;
     if (in0_sign != in1_sign) {
         /* This will be addition no matter what: -1 - 3 = -4 or 1 - -3 = 4*/
         *outsign = in0_sign;
         return t_add(ELEM, in0, in1, out);
     }
-    short comparison = t_comparison(ELEM, in0, in1);
+    comparison = t_comparison(ELEM, in0, in1);
     if (comparison == 0) {
         memset(out, 0, ELEM * sizeof(uint64_t));
         *outsign = 0;

@@ -13,9 +13,9 @@ bool verify_chain_signature(chain_t *chain) {
                signature.public_key.contents, comparator.contents);
     result = big_comparison(comparator.contents, digest.contents) == 0;
     /* Make sure memory isn't incontinent */
-    free_4096_t(&comparator);
-    free_4096_t(&transcryptor);
-    free_4096_t(&digest);
+    free_4096_t(comparator);
+    free_4096_t(transcryptor);
+    free_4096_t(digest);
     return result;
 }
 
@@ -32,9 +32,9 @@ bool verify_chain_head_signature(chain_head_t *head) {
                signature.public_key.contents, comparator.contents);
     result = big_comparison(comparator.contents, digest.contents) == 0;
     /* Make sure memory isn't incontinent */
-    free_4096_t(&comparator);
-    free_4096_t(&transcryptor);
-    free_4096_t(&digest);
+    free_4096_t(comparator);
+    free_4096_t(transcryptor);
+    free_4096_t(digest);
     return result;
 }
 

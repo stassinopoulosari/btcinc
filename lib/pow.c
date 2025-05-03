@@ -5,9 +5,10 @@ bool check_pow(chain_head_t *head, pow_t *pow) {
     size_t cursor, elements_to_check = POW_DIFFICULTY / 8,
                    digits_in_last_element = POW_DIFFICULTY % 8;
     bool pow_valid;
+    hash_t candidate_hash;
     pow = pow == NULL ? head->pow : pow;
     /* Low proof of work threshold */
-    hash_t candidate_hash = hash_chain_head(head, pow);
+    candidate_hash = hash_chain_head(head, pow);
     /* Check that each of the first POW_DIFFICULTY digits of the hash are zero */
     /* Find number of elements to check */
 
@@ -24,7 +25,6 @@ bool check_pow(chain_head_t *head, pow_t *pow) {
 
 bool add_to_buffer(buffer_chunk *buffer, size_t buffer_size) {
     size_t cursor;
-    buffer_chunk chunk;
     for (cursor = 0;
             /* Cursor doesn't overflow buffer */
             cursor < buffer_size / sizeof(buffer_chunk) &&

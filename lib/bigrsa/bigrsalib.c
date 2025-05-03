@@ -66,10 +66,11 @@ short is_zero(uint64_t *operand) {
 int big_prime(uint64_t *out, uint8_t words) {
     /* Initialise libgmp pointer */
     mpz_t m;
+    FILE *fp;
     /* Clear buffer */
     memset(out, 0, BYTES);
     /* Open pointer to /dev/urandom */
-    FILE *fp = fopen(RANDOM_PATH, "r");
+    fp = fopen(RANDOM_PATH, "r");
     /* Read out `words` 64-bit integers to out */
     fread(out, sizeof(uint64_t), words, fp);
     fclose(fp);
@@ -374,9 +375,9 @@ int shift_to_high(uint64_t *outperand) {
 }
 
 int input_read(FILE *file_handler, uint64_t *out) {
+    size_t words_read;
     memset(out, 0, BYTES);
     /* Keep track of words_read in case size of input is less than 4096 bits */
-    size_t words_read;
     for (words_read = 0; words_read < S; words_read++) {
         if (fread(out + (S - 1 - words_read), 1, 8, file_handler) < 8) {
             break;
@@ -416,7 +417,7 @@ int output_write(FILE *file_handler, uint64_t *out, short shift) {
 int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus,
                uint64_t *out) {
     uint64_t biggerbase[BIGS], biggermodulus[BIGS], biggerout[BIGS],
-             biggerswap[BIGS], swap[S];
+             biggerswap[BIGS], swap[S], working_exponent[S];
     /* Clear buffers */
     memset(out, 0, BYTES);
     memset(biggerbase, 0, BIG_BYTES);
@@ -424,6 +425,7 @@ int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus
     memset(biggerout, 0, BIG_BYTES);
     memset(biggerswap, 0, BIG_BYTES);
     memset(swap, 0, BYTES);
+    memcpy(working_exponent, exponent, BYTES);
     /* First make sure that modulus != 1 */
     if (comparison_ui(modulus, 1) == 0) {
         return 1;
@@ -434,15 +436,15 @@ int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus
     biggerout[0] = 1;
     t_rem(BIGS, biggerbase, biggermodulus, biggerswap);
     memcpy(biggerbase, biggerswap, BIG_BYTES);
-    while (!is_zero(exponent)) {
+    while (!is_zero(working_exponent)) {
         /* Check whether exponent is odd */
-        if (exponent[0] % 2 == 1) {
+        if (working_exponent[0] % 2 == 1) {
             if (t_mul(BIGS, biggerout, biggerbase, biggerswap)) {
                 return 1;
             }
             t_rem(BIGS, biggerswap, biggermodulus, biggerout);
         }
-        big_right_shift(exponent);
+        big_right_shift(working_exponent);
         if (t_mul(BIGS, biggerbase, biggerbase, biggerswap)) {
             return 1;
         }

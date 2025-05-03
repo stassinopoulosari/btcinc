@@ -6,6 +6,10 @@
 #define ROTATE(bits, shift) \
 (((bits) >> (shift)) | ((bits) << (sizeof(bits) * 8 - (shift))))
 
+void *memseek(void *pointer, size_t position) {
+    return ((char *)pointer) + position;
+}
+
 /*rounds.c*/
 uint32_t sha256_rounds[64] = {
     0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,
@@ -33,7 +37,7 @@ uint32_t sha256_initial_hashes[8] = {
 
 
 /* write a given size variable to the end of a chunk */
-void write_size_to_buffer(uint64_t size, uint8_t chunk[64]) {
+void write_size_to_buffer(uint64_t size, uint8_t *chunk) {
     int buffer_pos;
     int factor;
     for(buffer_pos = 56; buffer_pos < 64; buffer_pos++) {
@@ -118,16 +122,15 @@ uint32_t *hash(void *input, size_t input_size) {
     size_t chunk_size;
     int generate_extra_chunk = 1;
     short added_terminator = 0;
-    int digest_index;
     memcpy(hashes, sha256_initial_hashes, 8 * sizeof(uint32_t));
     /* Null check for input */
     do {
         if(added_terminator == 1) {
             chunk_size = 0;
         } else {
-            chunk_size = (input_size - cursor) > 64 ?
+            chunk_size = (input_size - cursor) < 64 ?
                          (input_size - cursor) : 64;
-            memcpy(chunk, input + cursor, chunk_size);
+            memcpy(chunk, memseek(input, cursor), chunk_size);
             cursor += chunk_size;
         }
         /* Chunk size == 64 --> Move on to the next chunk, even if the size is 0

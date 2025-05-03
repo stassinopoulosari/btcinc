@@ -81,7 +81,7 @@ typedef struct keyset_t {
 
 /* 4096_t Convenience Functions */
 uint4096_t make_4096_t();
-void free_4096_t(uint4096_t *to_free);
+void free_4096_t(uint4096_t to_free);
 
 /* Hashing API */
 hash_t hash_signature(signature_t signature);
