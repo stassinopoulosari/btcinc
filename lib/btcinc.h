@@ -1,5 +1,6 @@
 #include "bigrsa/bigrsa.h"
 #include "sha256/sha256.h"
+#include "list_t/list_t.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -21,6 +22,14 @@
 
 #define MODE_TAIL 1
 #define MODE_CHAIN 2
+#define MODE_HEAD 3
+
+#define BYTE_GENESIS 'g'
+#define BYTE_PREVIOUS 'p'
+#define BYTE_CHAIN 'c'
+#define BYTE_HEAD 'h'
+#define BYTE_DELIMITER '|'
+#define BYTE_HEAD_DELIMITER '}'
 
 typedef uint64_t buffer_chunk;
 
@@ -102,7 +111,7 @@ chain_t *chain_new(chain_tail_t *tail, chain_content_t *content_to_add,
 chain_t *chain_add(chain_t *chain, chain_content_t *content_to_add,
                    keyset_t *keyset);
 chain_head_t *commit_chain(chain_t *chain, keyset_t *keyset);
-void export_blockchain(char *filename);
+void export_blockchain(char *filename, chain_head_t *head);
 signature_t sign_hash(hash_t *hash_to_sign, keyset_t *keyset);
 bool verify_head(chain_head_t *to_verify);
 bool verify_chain(chain_t *to_verify);
