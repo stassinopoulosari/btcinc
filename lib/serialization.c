@@ -1,6 +1,4 @@
-#import "btcinc.h"
-#include "list_t/list_t.h"
-#include <stdio.h>
+#include "btcinc.h"
 
 chain_tail_t *read_chain_tail_from_file(FILE *file) {
     char tail_indicator = fgetc(file);
@@ -54,6 +52,7 @@ chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
     head->signature.public_key = make_4096_t();
     head->previous = previous;
     head->previous_hash.digest = malloc(DIGEST_SIZE);
+    head->pow = malloc(sizeof(pow_t));
     fread(&head->pow->pow_size, sizeof(size_t), 1, file);
     head->pow->pow = malloc(head->pow->pow_size);
     fread(head->pow->pow, head->pow->pow_size, 1, file);
@@ -77,20 +76,21 @@ short read_delimiter(FILE *file) {
 chain_head_t *import_blockchain(char *filename) {
     FILE *file = fopen(filename, "r");
     chain_tail_t *tail;
+    void *previous_item;
     chain_t *current_item = NULL;
-    chain_head_t *head;
     /* Read protocol */
     if (file == NULL || fscanf(file, "apsbtcincv0\n") == EOF)
         goto error;
     /* File position is now past the protocol to the tail */
     tail = read_chain_tail_from_file(file);
+    previous_item = tail;
     while (read_delimiter(file) == MODE_CHAIN) {
-        current_item =
-            read_chain_from_file(file, current_item != NULL ? current_item : tail,
-                                 current_item != NULL ? MODE_CHAIN : MODE_HEAD);
+        if (current_item != NULL)
+            previous_item = current_item;
+        current_item = read_chain_from_file(
+                           file, previous_item, previous_item == tail ? MODE_TAIL : MODE_CHAIN);
     }
-    head = read_chain_head_from_file(file, current_item);
-    return NULL;
+    return read_chain_head_from_file(file, current_item);
 error:
     fclose(file);
     fprintf(stderr, "Invalid file at %s\n", filename);
