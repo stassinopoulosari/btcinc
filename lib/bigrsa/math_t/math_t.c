@@ -39,7 +39,7 @@ uint64_t t_mul(size_t ELEM, uint64_t *base, uint64_t *multiplier,
     /* We want an output array that'ELEM the maximum possible size, we can trim
      * later
      */
-    uint64_t temp, *biggerout = malloc(ELEM * 2 + 1 * sizeof(uint64_t)),
+    uint64_t temp, *biggerout = malloc((ELEM * 2 + 1) * sizeof(uint64_t)),
                     out_carry;
     memset(biggerout, 0, bytes);
     /* Use a 64-bit variable to hold temporary results */
@@ -143,7 +143,7 @@ short t_comparison(size_t ELEM, uint64_t *left, uint64_t *right) {
 uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
                uint64_t *quotient, uint64_t *remainder) {
     size_t bytes = ELEM * sizeof(uint64_t);
-    /* I decided it'ELEM probably not such a hot idea to do things partially in
+    /* I decided it's probably not such a hot idea to do things partially in
      * place
      */
     uint64_t *working_numerator = malloc(bytes);
@@ -167,12 +167,13 @@ uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
         /* Infinity */
         memset(quotient, 255, bytes);
         memset(remainder, 255, bytes);
+        free(working_numerator);
+        free(working_denominator);
         return 1;
     } else if (t_comparison(ELEM, working_denominator, working_numerator) == 1) {
         /* Zero */
         memset(quotient, 0, bytes);
         memcpy(remainder, working_numerator, bytes);
-        free(quotient);
         free(working_numerator);
         free(working_denominator);
         return 0;
@@ -203,6 +204,8 @@ uint64_t t_div(size_t ELEM, uint64_t *numerator, uint64_t *denominator,
     /* Whatever we have leftover is our remainder */
     memcpy(remainder, working_numerator, bytes);
     /* GREAT SUCCESS */
+    free(working_numerator);
+    free(working_denominator);
     return 0;
 }
 

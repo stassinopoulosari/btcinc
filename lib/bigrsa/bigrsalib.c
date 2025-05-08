@@ -451,5 +451,5 @@ int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus
         t_rem(BIGS, biggerswap, biggermodulus, biggerbase);
     }
 
-    return t_sizedown(S, biggerout, out);
+    return t_sizedown(S, biggerout, out) > 0;
 }

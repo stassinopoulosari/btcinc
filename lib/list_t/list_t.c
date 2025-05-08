@@ -110,7 +110,11 @@ void list_print_item(list_t item) {
  */
 void list_print(list_t list) {
     putchar('[');
-    list_foreach(list, list_print_item);
+    if (list == NULL) {
+        printf("NULL");
+    } else {
+        list_foreach(list, list_print_item);
+    }
     putchar(']');
     putchar('\n');
 }
@@ -231,6 +235,7 @@ void list_insert(list_t list, size_t position, void *value) {
 void list_item_remove(list_t left, list_t item) {
     if (left == NULL) {
         front_remove(item);
+        return;
     }
     set_next_pointer(left, get_next_pointer(item));
     free(item);
@@ -290,6 +295,7 @@ void *list_pop(list_t list, size_t position) {
     if (position == 0) {
         return_value = get_content(list);
         list_item_remove(NULL, left);
+        return return_value;
     }
     while (get_next_pointer(left) != NULL && current_position < position - 1) {
         left = get_next_pointer(left);

@@ -11,15 +11,24 @@ bool check_pow(chain_head_t *head, pow_t *pow) {
     candidate_hash = hash_chain_head(head, pow);
     /* Check that each of the first POW_DIFFICULTY digits of the hash are zero */
     /* Find number of elements to check */
-
+    if (head->pow == pow) {
+        if(DEBUG) printf("Checking proof-of-work:\n");
+        if(DEBUG) print_hash(candidate_hash);
+    }
     for (cursor = 0; cursor < elements_to_check; cursor++) {
         if (candidate_hash.digest[cursor] != 0)
             return false;
     }
     last_element = candidate_hash.digest[cursor];
     /* Shift element to the right by 4 * digits */
-    pow_valid = (last_element >> (4 * digits_in_last_element)) == 0;
+    pow_valid = (last_element >>
+                 (sizeof(last_element) * 8 - (4 * digits_in_last_element))) == 0;
+    if (pow_valid) {
+        if(DEBUG) printf("Valid proof-of-work hash:\n");
+        if(DEBUG) print_hash(candidate_hash);
+    }
     free_hash(candidate_hash);
+
     return pow_valid;
 }
 
@@ -49,6 +58,7 @@ pow_t *do_pow(chain_head_t *head) {
             if (buffer != NULL)
                 free(buffer);
             buffer = malloc(buffer_size);
+            if(DEBUG) printf("Sizing buffer\n");
             memset(buffer, 0, buffer_size);
             pow->pow = buffer;
             pow->pow_size = buffer_size;
@@ -57,5 +67,6 @@ pow_t *do_pow(chain_head_t *head) {
         if (carry)
             buffer_size += sizeof(buffer_chunk);
     } while (!check_pow(head, pow));
+
     return pow;
 }

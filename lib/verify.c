@@ -25,16 +25,26 @@ bool verify_chain_head_signature(chain_head_t *head) {
                                            digest = make_4096_t();
     bool result;
     hash_t chain_hash = hash_chain_head(head, NULL);
+    if(DEBUG) printf("Copy digest to 4096\n");
     memcpy(digest.contents, chain_hash.digest, DIGEST_SIZE);
     free_hash(chain_hash);
+    if(DEBUG) printf("Store transcryptor\n");
     transcryptor.contents[0] = STD_ENCRYPTOR;
+    if(DEBUG) printf("Do big_modexp\n");
     big_modexp(signature.signature.contents, transcryptor.contents,
                signature.public_key.contents, comparator.contents);
+    if(DEBUG) printf("Store result\n");
+    if(DEBUG) print_4096_t(comparator);
     result = big_comparison(comparator.contents, digest.contents) == 0;
     /* Make sure memory isn't incontinent */
+    if(DEBUG) printf("Result: %d\n", result);
     free_4096_t(comparator);
+    if(DEBUG) printf("Freed comparator\n");
     free_4096_t(transcryptor);
+    if(DEBUG) printf("Freed transcryptor\n");
     free_4096_t(digest);
+    if(DEBUG) printf("Freed digest\n");
+    if(DEBUG) printf("Successfully freed memory\n");
     return result;
 }
 
@@ -42,17 +52,21 @@ bool verify_head(chain_head_t *head) {
     hash_t chain_hash;
     bool hashes_match;
     /* Verify POW is valid */
-    if (!check_pow(head, NULL))
+    if (!check_pow(head, NULL)) {
+        fprintf(stderr, "Unable to check the POW\n");
         return false;
+    }
     /* Verify previous hash */
     chain_hash = hash_signature(head->previous->signature);
-    if (!hashcmp(head->previous_hash, chain_hash))
-        hashes_match = false;
+    hashes_match = hashcmp(head->previous_hash, chain_hash);
     free_hash(chain_hash);
+    if(DEBUG) printf("Hashes match: %d\n", hashes_match);
     if (!hashes_match)
         return false;
-    if(!verify_chain_head_signature(head))
+    if(DEBUG) printf("Verify chain head signature\n");
+    if (!verify_chain_head_signature(head))
         return false;
+    if(DEBUG) printf("Head verification succeeds\n");
     return verify_chain(head->previous);
 }
 
@@ -62,21 +76,29 @@ bool verify_chain(chain_t *chain) {
     bool hashes_match;
     /* Check components */
     /* Exactly one of previous or tail must be null */
-    if (!((chain->previous == NULL) ^ (chain->tail == NULL)))
+    if (!((chain->previous == NULL) ^ (chain->tail == NULL))) {
+        fprintf(stderr, "Either previous or tail must be null\n");
         return false;
+    }
     mode = chain->previous != NULL ? MODE_CHAIN : MODE_TAIL;
     /* Verify previous hash */
     chain_hash = mode == MODE_CHAIN ? hash_signature(chain->previous->signature)
                  : hashcpy(chain->tail->previous_hash);
     hashes_match = hashcmp(chain_hash, chain->previous_hash);
     free_hash(chain_hash);
+    if(DEBUG) printf("Hashes match: %d\n", hashes_match);
     if (!hashes_match)
         return false;
     /* Verify signature */
+    if(DEBUG) printf("Verify signature\n");
     if (!verify_chain_signature(chain))
         return false;
-    /* If verification of actual chain succeeds, propagate back */
-    if (chain->previous != NULL)
+    /* If verification of actual chain succeeds, propagate back unless we hit the
+     * tail of this block */
+    if (chain->previous == NULL) {
+        if(DEBUG) printf("Chain verification succeeds\n");
         return true;
+    }
+    if(DEBUG) printf("Chain verification succeeds. Moving on to next\n");
     return verify_chain(chain->previous);
 }

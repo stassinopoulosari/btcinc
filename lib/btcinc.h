@@ -31,6 +31,9 @@
 #define BYTE_DELIMITER '|'
 #define BYTE_HEAD_DELIMITER '}'
 
+#define DEBUG false
+#define PRINT_SIGNATURES false
+
 typedef uint64_t buffer_chunk;
 
 typedef struct uint4096_t {
@@ -88,15 +91,17 @@ typedef struct keyset_t {
     uint4096_t private_key;
 } keyset_t;
 
+keyset_t *read_keyset_from_file(char *filename);
+
 /* 4096_t Convenience Functions */
 uint4096_t make_4096_t();
-void free_4096_t(uint4096_t to_free);
 
 /* Hashing API */
+hash_t make_hash();
 hash_t hash_signature(signature_t signature);
 hash_t hash_chain_head(chain_head_t *chain_head, pow_t *pow);
 hash_t hash_chain_content(chain_t *chain);
-void free_hash(hash_t to_free);
+
 bool hashcmp(hash_t left, hash_t right);
 hash_t hashcpy(hash_t prior);
 
@@ -112,8 +117,31 @@ chain_t *chain_add(chain_t *chain, chain_content_t *content_to_add,
                    keyset_t *keyset);
 chain_head_t *commit_chain(chain_t *chain, keyset_t *keyset);
 void export_blockchain(char *filename, chain_head_t *head);
-signature_t sign_hash(hash_t *hash_to_sign, keyset_t *keyset);
+
+
+void print_chain(chain_t *chain);
+void print_chain_head(chain_head_t *head);
+void print_blockchain(chain_head_t *head);
+void print_chain_tail(chain_tail_t *tail);
+void print_pow(pow_t *pow);
+void print_hash(hash_t to_print);
+void print_4096_t(uint4096_t number);
+void print_signature(signature_t signature);
+
+signature_t sign_hash(hash_t hash_to_sign, keyset_t *keyset);
 bool verify_head(chain_head_t *to_verify);
 bool verify_chain(chain_t *to_verify);
+
+/* Memory management */
+void free_blockchain(chain_head_t *head);
+void free_signature(signature_t signature);
+void free_chain_tail(chain_tail_t *tail);
+void free_chain(chain_t *chain);
+void free_pow(pow_t *pow);
+void free_4096_t(uint4096_t to_free);
+void free_hash(hash_t to_free);
+
+/* Scripts */
+void write_genesis(char *filename);
 
 #endif

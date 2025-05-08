@@ -9,6 +9,7 @@ dependencies_bigrsa := $(lib_path)/bigrsa/*.c $(dependencies_math_t)
 dependencies_sha256 := $(lib_path)/sha256/*.c
 dependencies := $(lib_path)/*.c $(dependencies_lib) $(dependencies_bigrsa) $(dependencies_sha256) $(dependencies_list_t)
 gcc_flags := --std=c89 -Wall -Wextra -Werror -Wpedantic -O2 -lgmp
+binary_name := btcinc.o
 
 outie: podman_run
 
@@ -24,6 +25,7 @@ style:
 innie: innie_run
 
 innie_run: innie_compile
+	./$(binary_name)
 
 innie_compile:
-	gcc $(primary) $(dependencies) -o btcinc.o $(gcc_flags)
+	gcc $(primary) $(dependencies) -o $(binary_name) $(gcc_flags)
