@@ -1,7 +1,7 @@
 container_tag := btcinc
-mount := --mount=type=bind,source=$(shell pwd)/bin/blocks,dst=/btcinc/bin/blocks
+mount := --mount=type=bind,source=$(shell pwd)/bin/blocks,dst=/bin/blocks
 
-src_path := btcinc
+src_path := .
 primary:= $(src_path)/btcinc.c
 lib_path := $(src_path)/lib
 dependencies_math_t := $(lib_path)/bigrsa/math_t/*.c
