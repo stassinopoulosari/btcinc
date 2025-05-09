@@ -72,7 +72,10 @@ int big_prime(uint64_t *out, uint8_t words) {
     /* Open pointer to /dev/urandom */
     fp = fopen(RANDOM_PATH, "r");
     /* Read out `words` 64-bit integers to out */
-    fread(out, sizeof(uint64_t), words, fp);
+    if(fread(out, sizeof(uint64_t), words, fp) < words) {
+        fprintf(stderr, "Unable to read prime\n");
+        exit(1);
+    }
     fclose(fp);
     /* Initialize m and set its value to the random bits we just read */
     mpz_init(m);

@@ -1,6 +1,4 @@
 #include "btcinc.h"
-#include <stdint.h>
-#include <string.h>
 
 bool verify_chain_signature(chain_t *chain) {
     signature_t signature = chain->signature;
@@ -142,7 +140,7 @@ bool get_block_number(char *filename, uint64_t *block_number, char *prefix) {
 
 bool _verify_recursive(chain_head_t *blockchain, char *filename, bool free) {
     char prefix[NAME_MAX];
-    char prev_filename[NAME_MAX];
+    char prev_filename[NAME_MAX * 2];
     chain_head_t *prev_blockchain;
     chain_t *chain_item;
     uint64_t block_number;
@@ -169,7 +167,8 @@ bool _verify_recursive(chain_head_t *blockchain, char *filename, bool free) {
         free_hash(tail_hash);
         return result;
     }
-    snprintf(prev_filename, NAME_MAX, "%s%lu.block", prefix, block_number - 1);
+    sprintf(prev_filename, "%s%lu.block", prefix, block_number - 1);
+    prev_filename[NAME_MAX - 1] = '\0';
     prev_blockchain = import_blockchain(prev_filename);
     comparison_hash = hash_signature(prev_blockchain->signature);
     result = hashcmp(comparison_hash, tail_hash);
