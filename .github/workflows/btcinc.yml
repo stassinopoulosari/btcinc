@@ -17,7 +17,7 @@ jobs:
                   token: ${{ secrets.GH_TOKEN }}
             - name: Set Git config
               run: |
-                  git config --global user.email "github@ari-s.com"
+                  git config --global user.email "crypto@ari-s.com"
                   git config --global user.name "Ari Stassinopoulos (Bot)"
             - name: Build and run
               run: |
