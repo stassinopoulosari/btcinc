@@ -62,5 +62,5 @@ int read_key(FILE *file_handler, short mode, uint64_t *public_n,
              uint64_t *transcryptor);
 int input_read(FILE *file_handler, uint64_t *out);
 int output_write(FILE *file_handler, uint64_t *out, short shift);
-int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus,
+int big_modexp(uint64_t *base, uint64_t *exponent, uint64_t *modulus,
                uint64_t *out);

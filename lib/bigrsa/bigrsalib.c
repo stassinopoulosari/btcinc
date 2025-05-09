@@ -414,7 +414,7 @@ int output_write(FILE *file_handler, uint64_t *out, short shift) {
 }
 
 /* Modular exponentiation! I had to do something really dumb here */
-int big_modexp(const uint64_t *base, const uint64_t *exponent, uint64_t *modulus,
+int big_modexp(uint64_t *base, uint64_t *exponent, uint64_t *modulus,
                uint64_t *out) {
     uint64_t biggerbase[BIGS], biggermodulus[BIGS], biggerout[BIGS],
              biggerswap[BIGS], swap[S], working_exponent[S];

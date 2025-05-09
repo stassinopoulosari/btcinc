@@ -55,13 +55,13 @@ pow_t *do_pow(chain_head_t *head) {
     short carry = 1;
     buffer_chunk *buffer = NULL;
     do {
-    	/* If we need to expand the buffer */
+        /* If we need to expand the buffer */
         if (carry == 1) {
-        	/* Free the existing buffer and start over. We do this because the size of the input matters for SHA256 */
+            /* Free the existing buffer and start over. We do this because the size of the input matters for SHA256 */
             if (buffer != NULL)
                 free(buffer);
             buffer = malloc(buffer_size);
-           	/* Clear out the new buffer */
+            /* Clear out the new buffer */
             memset(buffer, 0, buffer_size);
             pow->pow = buffer;
             pow->pow_size = buffer_size;

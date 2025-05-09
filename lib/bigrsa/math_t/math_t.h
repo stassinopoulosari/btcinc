@@ -12,8 +12,8 @@ uint64_t t_div(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *quo, uint64_
 uint64_t t_quo(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *quo);
 uint64_t t_rem(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *rem);
 short t_comparison(size_t ELEM, uint64_t *left, uint64_t *right);
-int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, const uint64_t *big, uint64_t *bigger);
-uint64_t t_sizedown(size_t ELEM_OUT, const uint64_t *bigger, uint64_t *big);
+int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, uint64_t *big, uint64_t *bigger);
+uint64_t t_sizedown(size_t ELEM_OUT, uint64_t *bigger, uint64_t *big);
 uint64_t lil_log(uint64_t in);
 
 /* Signed math_t */

@@ -223,7 +223,7 @@ uint64_t t_rem(size_t ELEM, uint64_t *num, uint64_t *den, uint64_t *rem) {
     return 0;
 }
 
-int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, const uint64_t *big,
+int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, uint64_t *big,
              uint64_t *bigger) {
     /* Clear output buffer */
     memset(bigger, 0, ELEM_OUT * sizeof(uint64_t));
@@ -231,7 +231,7 @@ int t_sizeup(size_t ELEM_IN, size_t ELEM_OUT, const uint64_t *big,
     return 0;
 }
 
-uint64_t t_sizedown(size_t ELEM_OUT, const uint64_t *bigger, uint64_t *big) {
+uint64_t t_sizedown(size_t ELEM_OUT, uint64_t *bigger, uint64_t *big) {
     /* Clear output buffer */
     size_t bytes = ELEM_OUT * sizeof(uint64_t);
     memset(big, 0, bytes);

@@ -149,3 +149,11 @@ bool hashcmp(hash_t left, hash_t right) {
     }
     return true;
 }
+
+chain_content_t *make_content(void *content, size_t content_size) {
+    chain_content_t *chain_content = malloc(sizeof(chain_content_t));
+    chain_content->content_size = content_size;
+    chain_content->content = malloc(content_size);
+    memcpy(chain_content->content, content, content_size);
+    return chain_content;
+}

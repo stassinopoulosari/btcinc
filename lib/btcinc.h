@@ -1,18 +1,19 @@
 #include "bigrsa/bigrsa.h"
-#include "sha256/sha256.h"
 #include "list_t/list_t.h"
+#include "sha256/sha256.h"
+#include <dirent.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <dirent.h>
 
 /* Definition guard */
 #ifndef BTCINC
 
 #define BTCINC
+#define NAME_MAX 1024
 
 /* Constants and magic numbers */
 
@@ -24,7 +25,8 @@
 #define DIGEST_WORDS (256 / 32)
 /* Number of bytes in an SHA256 digest */
 #define DIGEST_SIZE (DIGEST_WORDS * sizeof(uint32_t))
-/* Number of leading digest digits (hexadecimal) that must be zero for POW to succeed */
+/* Number of leading digest digits (hexadecimal) that must be zero for POW to
+ * succeed */
 #define POW_DIFFICULTY 2
 
 /* Modes to use for reading and writing chains/tails */
@@ -70,8 +72,8 @@ typedef struct signature_t {
 /* Representation of blockchain tail */
 typedef struct chain_tail_t {
     /* Hash of the signature of the head of the previous file
-    *  ...or all zeroes for the genesis block
-    */
+     *  ...or all zeroes for the genesis block
+     */
     hash_t previous_hash;
 } chain_tail_t;
 
@@ -87,7 +89,8 @@ typedef struct chain_t {
     /* Exactly one of previous or tail must be NULL */
     struct chain_t *previous;
     chain_tail_t *tail;
-    /* Hash of the signature of the previous file's head or of the previous chain */
+    /* Hash of the signature of the previous file's head or of the previous chain
+     */
     hash_t previous_hash;
 } chain_t;
 
@@ -146,9 +149,12 @@ hash_t hashcpy(hash_t prior);
 
 /* BTCinC API */
 
-/* Given a chain head without a Proof-of-Work, find a value that satisfied Proof-of-Work */
+chain_content_t *make_content(void *content, size_t content_size);
+/* Given a chain head without a Proof-of-Work, find a value that satisfied
+ * Proof-of-Work */
 pow_t *do_pow(chain_head_t *head);
-/* Verify whether a given value satisfied Proof-of-Work. Pass NULL to pow to use the pow in head.*/
+/* Verify whether a given value satisfied Proof-of-Work. Pass NULL to pow to use
+ * the pow in head.*/
 bool check_pow(chain_head_t *head, pow_t *pow);
 /* Create a genesis block.*/
 chain_tail_t *genesis();
@@ -196,12 +202,13 @@ signature_t sign_hash(hash_t hash_to_sign, keyset_t *keyset);
 bool verify_head(chain_head_t *to_verify);
 /* Verify a chain item*/
 bool verify_chain(chain_t *to_verify);
+/* Verify the entire blockchain */
+bool verify_recursive(chain_head_t *blockchain, char *filename);
 
 uint4096_t rsa_encrypt(uint4096_t input, keyset_t *keyset);
 uint4096_t rsa_decrypt(uint4096_t input, uint4096_t public_key);
 uint4096_t hash_to_4096_t(hash_t input);
 uint4096_t copy_uint4096_t(uint4096_t input);
-
 
 /* Memory management */
 void free_blockchain(chain_head_t *head);
@@ -211,8 +218,13 @@ void free_chain(chain_t *chain);
 void free_pow(pow_t *pow);
 void free_4096_t(uint4096_t to_free);
 void free_hash(hash_t to_free);
-
+void free_chain_content(chain_content_t *content);
+void free_keyset(keyset_t *keyset);
 /* Scripts */
-void write_genesis(char *filename);
+void write_genesis(char *filename, keyset_t *keyset);
+bool get_blocks(char *dirname, char *last_block_name, char *next_block_name);
+void add_to_blockchain(char *blockchain_directory,
+                       keyset_t *keyset, chain_content_t *content);
+void do_day(char *blockchain_directory, keyset_t *keyset);
 
 #endif

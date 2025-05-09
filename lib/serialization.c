@@ -63,7 +63,8 @@ chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
         return chain;
     }
     chain->tail = (chain_tail_t *)previous;
-    /* We want to copy the hash here because otherwise we have a segfault when we free it (ask me how I know) */
+    /* We want to copy the hash here because otherwise we have a segfault when we
+     * free it (ask me how I know) */
     chain->previous_hash = hashcpy(chain->tail->previous_hash);
     return chain;
 }
@@ -100,7 +101,8 @@ short read_delimiter_from_file(FILE *file) {
     } else if (delimiter == BYTE_HEAD_DELIMITER) {
         return MODE_HEAD;
     }
-    fprintf(stderr, "Unexpected character %c in delimiter, expected %c or %c.\n", delimiter, BYTE_DELIMITER, BYTE_HEAD_DELIMITER);
+    fprintf(stderr, "Unexpected character %c in delimiter, expected %c or %c.\n",
+            delimiter, BYTE_DELIMITER, BYTE_HEAD_DELIMITER);
     exit(1);
 }
 
@@ -112,21 +114,28 @@ chain_head_t *import_blockchain(char *filename) {
     chain_t *current_item = NULL;
     chain_head_t *head;
     /* Read protocol */
-    if (file == NULL || fscanf(file, "apsbtcincv0\n") == EOF)
+    if (file == NULL) {
+        printf("Unable to open %s\n", filename);
+        exit(1);
+    }
+    if (fscanf(file, "apsbtcincv0\n") == EOF)
         goto error;
     /* File position is now past the protocol to the tail */
     tail = read_chain_tail_from_file(file);
-    if(DEBUG) print_chain_tail(tail);
+    if (DEBUG)
+        print_chain_tail(tail);
     previous_item = tail;
     while (read_delimiter_from_file(file) == MODE_CHAIN) {
         if (current_item != NULL)
             previous_item = current_item;
         current_item = read_chain_from_file(
                            file, previous_item, previous_item == tail ? MODE_TAIL : MODE_CHAIN);
-        if(DEBUG) print_chain(current_item);
+        if (DEBUG)
+            print_chain(current_item);
     }
     head = read_chain_head_from_file(file, current_item);
-    if(DEBUG) print_chain_head(head);
+    if (DEBUG)
+        print_chain_head(head);
     fclose(file);
     return head;
 error:
@@ -179,20 +188,20 @@ void export_blockchain(char *filename, chain_head_t *head) {
         exit(1);
     }
 
-    if(DEBUG) print_chain_head(head);
+    if (DEBUG)
+        print_chain_head(head);
 
-    if(DEBUG) printf("Add chain to list\n");
+    if (DEBUG)
+        printf("Add chain to list\n");
 
-    if(DEBUG) print_chain(current_item);
+    if (DEBUG)
+        print_chain(current_item);
 
     while (tail == NULL) {
         /* Insert item to the beginning of the list */
-        list_insert(
-            chain_items,
-            0,
-            (void *)current_item
-        );
-        if(DEBUG) printf("Insert succeeded\n");
+        list_insert(chain_items, 0, (void *)current_item);
+        if (DEBUG)
+            printf("Insert succeeded\n");
         if (current_item->previous == NULL)
             tail = current_item->tail;
         current_item = current_item->previous;
@@ -207,23 +216,29 @@ void export_blockchain(char *filename, chain_head_t *head) {
         fprintf(stderr, "Error: Could not open %s to read blockchain.\n", filename);
         exit(1);
     }
-    if(DEBUG) printf("Printing header to file\n");
+    if (DEBUG)
+        printf("Printing header to file\n");
     fprintf(file, "apsbtcincv0\n");
-    if(DEBUG) printf("Printing chain tail to file\n");
+    if (DEBUG)
+        printf("Printing chain tail to file\n");
     write_chain_tail_to_file(file, tail);
     write_item_delimiter_to_file(file);
     while (!list_is_empty(chain_items)) {
         current_item = list_pop(chain_items, 0);
-        if(DEBUG) print_chain(current_item);
+        if (DEBUG)
+            print_chain(current_item);
         write_chain_to_file(file, current_item);
         if (!list_is_empty(chain_items))
             write_item_delimiter_to_file(file);
-        if(DEBUG) printf("Successfully printed chain item.\n");
+        if (DEBUG)
+            printf("Successfully printed chain item.\n");
     }
     write_head_delimiter_to_file(file);
-    if(DEBUG) printf("Successfully printed head.\n");
+    if (DEBUG)
+        printf("Successfully printed head.\n");
 
     write_chain_head_to_file(file, head);
     fclose(file);
-    if(DEBUG) printf("Successfully closed file.\n");
+    if (DEBUG)
+        printf("Successfully closed file.\n");
 }

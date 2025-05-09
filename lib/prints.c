@@ -74,6 +74,7 @@ void print_chain_head(chain_head_t *head) {
     }
     putchar('\n');
 }
+
 void print_chain_recursive(chain_t *chain) {
     if(chain->previous != NULL) {
         print_chain_recursive(chain->previous);

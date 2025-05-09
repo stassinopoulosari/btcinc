@@ -1,4 +1,5 @@
 container_tag := btcinc
+mount := --mount=type=bind,source=$(shell pwd)/bin/blocks,dst=/btcinc/bin/blocks
 
 src_path := btcinc
 primary:= $(src_path)/btcinc.c
@@ -14,7 +15,7 @@ binary_name := btcinc.o
 outie: podman_run
 
 podman_run: podman_build
-	podman run -it $(container_tag) make -f ./btcinc/Makefile innie
+	podman run $(mount) -it $(container_tag) make -f ./btcinc/Makefile innie
 
 podman_build: style
 	podman build -t $(container_tag) -f Containerfile .
