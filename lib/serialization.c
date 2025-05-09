@@ -1,5 +1,6 @@
 #include "btcinc.h"
 #include "list_t/list_t.h"
+#include <stdio.h>
 
 /* Wrapper for read_key from bigrsa */
 keyset_t *read_keyset_from_file(char *filename) {
@@ -30,7 +31,10 @@ chain_tail_t *read_chain_tail_from_file(FILE *file) {
     }
     /* Read in the hash of the previous signature */
     prev_hash = make_hash();
-    fread(prev_hash.digest, DIGEST_SIZE, 1, file);
+    if (fread(prev_hash.digest, DIGEST_SIZE, 1, file) != 1) {
+        fprintf(stderr, "Did not read tail");
+        exit(1);
+    }
     tail = malloc(sizeof(chain_tail_t));
     tail->previous_hash = prev_hash;
     return tail;
@@ -39,6 +43,7 @@ chain_tail_t *read_chain_tail_from_file(FILE *file) {
 chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
     chain_t *chain;
     char chain_signifier = fgetc(file);
+    size_t items_read = 0;
     if (chain_signifier != BYTE_CHAIN) {
         fprintf(stderr, "Unexpected signifier byte %c for a chain, expected %c\n",
                 chain_signifier, BYTE_CHAIN);
@@ -48,12 +53,16 @@ chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
     /* Leave space for our various values */
     chain->signature.signature = make_4096_t();
     chain->signature.public_key = make_4096_t();
-    fread(&chain->content_size, sizeof(size_t), 1, file);
+    items_read += fread(&chain->content_size, sizeof(size_t), 1, file);
     chain->content = malloc(chain->content_size);
-    fread(chain->content, chain->content_size, 1, file);
-    fread(&chain->timestamp, sizeof(uint64_t), 1, file);
-    fread(chain->signature.signature.contents, KEY_SIZE, 1, file);
-    fread(chain->signature.public_key.contents, KEY_SIZE, 1, file);
+    items_read += fread(chain->content, chain->content_size, 1, file);
+    items_read += fread(&chain->timestamp, sizeof(uint64_t), 1, file);
+    items_read += fread(chain->signature.signature.contents, KEY_SIZE, 1, file);
+    items_read += fread(chain->signature.public_key.contents, KEY_SIZE, 1, file);
+    if (items_read < 5) {
+        fprintf(stderr, "Did not read full chain item\n");
+        exit(1);
+    }
     /* If we are adding to a previous chain */
     chain->tail = NULL;
     chain->previous = NULL;
@@ -72,6 +81,7 @@ chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
 chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
     chain_head_t *head;
     char head_signifier = fgetc(file);
+    size_t items_read = 0;
     if (head_signifier != BYTE_HEAD) {
         fprintf(stderr, "Unexpected signifier byte %c for a head, expected %c\n",
                 head_signifier, BYTE_HEAD);
@@ -84,12 +94,16 @@ chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
     head->previous = previous;
     head->previous_hash = hash_signature(previous->signature);
     head->pow = malloc(sizeof(pow_t));
-    fread(&head->pow->pow_size, sizeof(size_t), 1, file);
+    items_read += fread(&head->pow->pow_size, sizeof(size_t), 1, file);
     head->pow->pow = malloc(head->pow->pow_size);
-    fread(head->pow->pow, head->pow->pow_size, 1, file);
-    fread(&head->timestamp, sizeof(uint64_t), 1, file);
-    fread(head->signature.signature.contents, KEY_SIZE, 1, file);
-    fread(head->signature.public_key.contents, KEY_SIZE, 1, file);
+    items_read += fread(head->pow->pow, head->pow->pow_size, 1, file);
+    items_read += fread(&head->timestamp, sizeof(uint64_t), 1, file);
+    items_read += fread(head->signature.signature.contents, KEY_SIZE, 1, file);
+    items_read += fread(head->signature.public_key.contents, KEY_SIZE, 1, file);
+    if (items_read < 5) {
+        fprintf(stderr, "Did not read full head\n");
+        exit(1);
+    }
     return head;
 }
 

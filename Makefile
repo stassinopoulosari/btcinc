@@ -15,7 +15,7 @@ binary_name := btcinc.o
 outie: podman_run
 
 podman_run: podman_build
-	podman run $(mount) -it $(container_tag) make -f ./btcinc/Makefile innie
+	podman run $(mount) -it $(container_tag) make -f Makefile innie
 
 podman_build: style
 	podman build -t $(container_tag) -f Containerfile .
