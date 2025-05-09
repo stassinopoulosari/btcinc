@@ -1,6 +1,7 @@
 #include "btcinc.h"
 #include "list_t/list_t.h"
 
+/* Wrapper for read_key from bigrsa */
 keyset_t *read_keyset_from_file(char *filename) {
     uint4096_t private, public;
     keyset_t *keyset;
@@ -17,15 +18,17 @@ keyset_t *read_keyset_from_file(char *filename) {
     return keyset;
 }
 
+/* Read the chain tail */
 chain_tail_t *read_chain_tail_from_file(FILE *file) {
     char tail_indicator = fgetc(file);
     hash_t prev_hash;
     chain_tail_t *tail;
-    if (tail_indicator != BYTE_PREVIOUS) {
+    if (tail_indicator != BYTE_TAIL) {
         fprintf(stderr, "Unexpected tail signifier byte %c, expected %c.\n",
-                tail_indicator, BYTE_PREVIOUS);
+                tail_indicator, BYTE_TAIL);
         exit(1);
     }
+    /* Read in the hash of the previous signature */
     prev_hash = make_hash();
     fread(prev_hash.digest, DIGEST_SIZE, 1, file);
     tail = malloc(sizeof(chain_tail_t));
@@ -42,6 +45,7 @@ chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
         exit(1);
     }
     chain = malloc(sizeof(chain_t));
+    /* Leave space for our various values */
     chain->signature.signature = make_4096_t();
     chain->signature.public_key = make_4096_t();
     fread(&chain->content_size, sizeof(size_t), 1, file);
@@ -50,21 +54,21 @@ chain_t *read_chain_from_file(FILE *file, void *previous, short mode) {
     fread(&chain->timestamp, sizeof(uint64_t), 1, file);
     fread(chain->signature.signature.contents, KEY_SIZE, 1, file);
     fread(chain->signature.public_key.contents, KEY_SIZE, 1, file);
+    /* If we are adding to a previous chain */
+    chain->tail = NULL;
+    chain->previous = NULL;
     if (mode == MODE_CHAIN) {
         chain->previous = (chain_t *)previous;
         chain->previous_hash = hash_signature(chain->previous->signature);
-        chain->tail = NULL;
         return chain;
     }
-    chain->previous = NULL;
     chain->tail = (chain_tail_t *)previous;
+    /* We want to copy the hash here because otherwise we have a segfault when we free it (ask me how I know) */
     chain->previous_hash = hashcpy(chain->tail->previous_hash);
-
     return chain;
 }
 
 chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
-    /* TODO double-check mallocs */
     chain_head_t *head;
     char head_signifier = fgetc(file);
     if (head_signifier != BYTE_HEAD) {
@@ -72,6 +76,7 @@ chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
                 head_signifier, BYTE_HEAD);
         exit(1);
     }
+    /* Make space for our various values */
     head = malloc(sizeof(chain_head_t));
     head->signature.signature = make_4096_t();
     head->signature.public_key = make_4096_t();
@@ -87,6 +92,7 @@ chain_head_t *read_chain_head_from_file(FILE *file, chain_t *previous) {
     return head;
 }
 
+/* Read one character to determine whether the next item is a chain or a head */
 short read_delimiter_from_file(FILE *file) {
     char delimiter = fgetc(file);
     if (delimiter == BYTE_DELIMITER) {
@@ -98,6 +104,7 @@ short read_delimiter_from_file(FILE *file) {
     exit(1);
 }
 
+/* Import a blockchain from a file */
 chain_head_t *import_blockchain(char *filename) {
     FILE *file = fopen(filename, "r");
     chain_tail_t *tail;
@@ -150,16 +157,7 @@ void write_chain_head_to_file(FILE *file, chain_head_t *head) {
 }
 
 void write_chain_tail_to_file(FILE *file, chain_tail_t *tail) {
-    /* We've already printed protocol */
-    /* Previous file digest:
-     * 	- If this is the genesis block, print TAIL
-     */
-    /*if (tail->previous_hash.digest == NULL) {
-        fputc(BYTE_GENESIS, file);
-        return;
-    }*/
-    /* Otherwise, write the hash digest */
-    fputc(BYTE_PREVIOUS, file);
+    fputc(BYTE_TAIL, file);
     fwrite(tail->previous_hash.digest, DIGEST_SIZE, 1, file);
 }
 

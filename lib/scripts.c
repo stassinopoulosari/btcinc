@@ -40,3 +40,8 @@ void write_genesis(char *filename) {
     printf("Free used variables\n");
     free_blockchain(head);
 }
+
+void write_block() {
+    /* DIR *blocks;
+     uint64_t max_block; */
+}

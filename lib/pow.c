@@ -32,6 +32,7 @@ bool check_pow(chain_head_t *head, pow_t *pow) {
     return pow_valid;
 }
 
+/* Add one (1) to a buffer */
 bool add_to_buffer(buffer_chunk *buffer, size_t buffer_size) {
     size_t cursor;
     for (cursor = 0;
@@ -54,11 +55,13 @@ pow_t *do_pow(chain_head_t *head) {
     short carry = 1;
     buffer_chunk *buffer = NULL;
     do {
+    	/* If we need to expand the buffer */
         if (carry == 1) {
+        	/* Free the existing buffer and start over. We do this because the size of the input matters for SHA256 */
             if (buffer != NULL)
                 free(buffer);
             buffer = malloc(buffer_size);
-            if(DEBUG) printf("Sizing buffer\n");
+           	/* Clear out the new buffer */
             memset(buffer, 0, buffer_size);
             pow->pow = buffer;
             pow->pow_size = buffer_size;
