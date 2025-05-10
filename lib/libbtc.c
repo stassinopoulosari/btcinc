@@ -157,3 +157,28 @@ chain_content_t *make_content(void *content, size_t content_size) {
     memcpy(chain_content->content, content, content_size);
     return chain_content;
 }
+
+bool get_block_number(char *filename, uint64_t *block_number, char *prefix) {
+    size_t strpos, inner_iter, maxlen;
+    char last_five[6] = {0, 0, 0, 0, 0, 0};
+    bool block_found = false;
+    maxlen = strlen(filename);
+    for(strpos = 0; strpos + 7 < maxlen; strpos++) {
+        for(inner_iter = 0; inner_iter < 4; inner_iter++) {
+            last_five[inner_iter] = last_five[inner_iter + 1];
+        }
+        last_five[4] = filename[strpos];
+        if(!strcmp(last_five, "block") && filename[strpos + 1] == '_') {
+            strpos += 2;
+            block_found = true;
+            break;
+        }
+    }
+    if(!block_found)
+        return false;
+    strcpy(prefix, filename);
+    prefix[strpos] = '\0';
+    /* Iter is now after "block_" */
+    if(sscanf(filename + strpos, "%lu", block_number) != 1) return false;
+    return true;
+}

@@ -1,5 +1,6 @@
 #include "btcinc.h"
 #include <dirent.h>
+#include <string.h>
 
 void write_genesis(char *filename, keyset_t *keyset) {
     chain_tail_t *genesis_tail;
@@ -89,23 +90,25 @@ bool get_last_block(char *dirname, char *last_block_name,
 
 void add_to_blockchain(char *blockchain_directory, keyset_t *keyset,
                        chain_content_t *content) {
-    char last_block_name[NAME_MAX], next_block_name[NAME_MAX];
+    char str_swap[NAME_MAX], next_block_name[NAME_MAX + 4];
     chain_head_t *previous_blockchain;
     chain_head_t *new_blockchain;
+    FILE *text_file;
+
     printf("Finding last block in %s...\n", blockchain_directory);
-    if (!get_last_block(blockchain_directory, last_block_name, next_block_name)) {
+    if (!get_last_block(blockchain_directory, str_swap, next_block_name)) {
         printf("Unable to find last block\n");
-        sprintf(last_block_name, "%s/block_0.block", blockchain_directory);
-        printf("Writing genesis to %s\n", last_block_name);
-        write_genesis(last_block_name, keyset);
-        get_last_block(blockchain_directory, last_block_name, next_block_name);
+        sprintf(str_swap, "%s/block_0.block", blockchain_directory);
+        printf("Writing genesis to %s\n", str_swap);
+        write_genesis(str_swap, keyset);
+        get_last_block(blockchain_directory, str_swap, next_block_name);
     }
 
-    printf("Last block was %s\n", last_block_name);
-    previous_blockchain = import_blockchain(last_block_name);
+    printf("Last block was %s\n", str_swap);
+    previous_blockchain = import_blockchain(str_swap);
 
     printf("Verifying previous blockchain...\n");
-    if (!verify_recursive(previous_blockchain, last_block_name)) {
+    if (!verify_recursive(previous_blockchain, str_swap)) {
         printf("Unable to verify... exiting\n");
         exit(1);
     }
@@ -120,6 +123,14 @@ void add_to_blockchain(char *blockchain_directory, keyset_t *keyset,
 
     printf("Writing blockchain to %s\n", next_block_name);
     export_blockchain(next_block_name, new_blockchain);
+
+    strcpy(str_swap, next_block_name);
+    sprintf(next_block_name, "%s.txt", str_swap);
+    text_file = fopen(next_block_name, "w");
+    fprint_blockchain(text_file, new_blockchain);
+    fclose(text_file);
+
+    printf("Writing text representation of blockchain\n");
     printf("Freeing memory\n");
     free_blockchain(previous_blockchain);
     free_blockchain(new_blockchain);
@@ -140,4 +151,37 @@ void do_day(char *blockchain_directory, keyset_t *keyset) {
     add_to_blockchain(blockchain_directory, keyset, content);
 
     free_chain_content(content);
+}
+
+
+void print_chain(chain_t *chain) {
+    fprint_chain(stdout, chain);
+}
+
+void print_chain_head(chain_head_t *head) {
+    fprint_chain_head(stdout, head);
+}
+
+void print_blockchain(chain_head_t *head) {
+    fprint_blockchain(stdout, head);
+}
+
+void print_chain_tail(chain_tail_t *tail) {
+    fprint_chain_tail(stdout, tail);
+}
+
+void print_pow(pow_t *pow) {
+    fprint_pow(stdout, pow);
+}
+
+void print_hash(hash_t to_print) {
+    fprint_hash(stdout, to_print);
+}
+
+void print_4096_t(uint4096_t number) {
+    fprint_4096_t(stdout, number);
+}
+
+void print_signature(signature_t signature) {
+    fprint_signature(stdout, signature);
 }

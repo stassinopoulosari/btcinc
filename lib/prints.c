@@ -1,163 +1,163 @@
 #include "btcinc.h"
 #include <stdio.h>
 
-void print_signature(signature_t signature) {
-    printf("  Signature\n");
-    printf("    Block<");
+void fprint_signature(FILE *out, signature_t signature) {
+    fprintf(out, "  Signature\n");
+    fprintf(out, "    Block<");
     if (signature.signature.contents == NULL)
-        printf("NULL>");
+        fprintf(out, "NULL>");
     else {
-        printf("%p>", (void *)signature.signature.contents);
+        fprintf(out, "%p>", (void *)signature.signature.contents);
         if (PRINT_SIGNATURES)
-            print_4096_t(signature.signature);
+            fprint_4096_t(out, signature.signature);
     }
-    putchar('\n');
-    printf("    Public Key<");
+    fputc('\n', out);
+    fprintf(out, "    Public Key<");
     if (signature.public_key.contents == NULL)
-        printf("NULL>");
+        fprintf(out, "NULL>");
     else {
-        printf("%p>", (void *)signature.public_key.contents);
+        fprintf(out, "%p>", (void *)signature.public_key.contents);
         if (PRINT_SIGNATURES)
-            print_4096_t(signature.public_key);
+            fprint_4096_t(out, signature.public_key);
     }
 }
 
-void print_chain_tail(chain_tail_t *tail) {
-    printf("Chain tail:\n");
+void fprint_chain_tail(FILE *out, chain_tail_t *tail) {
+    fprintf(out, "Chain tail:\n");
     if (tail == NULL) {
-        printf("  NULL\n");
+        fprintf(out, "  NULL\n");
         return;
     }
-    printf("  Previous hash\n{\n");
-    print_hash(tail->previous_hash);
-    printf("}\n");
-    putchar('\n');
+    fprintf(out, "  Previous hash\n{\n");
+    fprint_hash(out, tail->previous_hash);
+    fprintf(out, "}\n");
+    fputc('\n', out);
 }
 
-void print_chain_head(chain_head_t *head) {
-    printf("Chain head:\n");
+void fprint_chain_head(FILE *out, chain_head_t *head) {
+    fprintf(out, "Chain head:\n");
     if (head == NULL) {
-        printf("  NULL\n");
+        fprintf(out, "  NULL\n");
         return;
     }
-    printf("  Proof of work    ");
+    fprintf(out, "  Proof of work    ");
     if (head->pow == NULL) {
-        printf("NULL\n");
+        fprintf(out, "NULL\n");
     } else {
-        printf("pow<%p>\n", (void *)head->pow);
-        printf("    Content of size %lu\n", head->pow->pow_size);
+        fprintf(out, "pow<%p>\n", (void *)head->pow);
+        fprintf(out, "    Content of size %lu\n", head->pow->pow_size);
     }
-    printf("  Previous         ");
+    fprintf(out, "  Previous         ");
     if (head->previous == NULL) {
-        printf("NULL");
+        fprintf(out, "NULL");
     } else {
-        printf("Chain<%p>", (void *)head->previous);
+        fprintf(out, "Chain<%p>", (void *)head->previous);
     }
-    putchar('\n');
-    printf("  Timestamp        %lu\n", head->timestamp);
-    print_signature(head->signature);
-    printf("    Public Key<");
+    fputc('\n', out);
+    fprintf(out, "  Timestamp        %lu\n", head->timestamp);
+    fprint_signature(out, head->signature);
+    fprintf(out, "    Public Key<");
     if (head->signature.public_key.contents == NULL)
-        printf("NULL>");
+        fprintf(out, "NULL>");
     else {
-        printf("%p>", (void *)head->signature.public_key.contents);
+        fprintf(out, "%p>", (void *)head->signature.public_key.contents);
         if (PRINT_SIGNATURES)
-            print_4096_t(head->signature.public_key);
+            fprint_4096_t(out, head->signature.public_key);
     }
-    putchar('\n');
-    printf("  Previous hash \n{\n");
-    print_hash(head->previous_hash);
-    printf("}\n");
+    fputc('\n', out);
+    fprintf(out, "  Previous hash \n{\n");
+    fprint_hash(out, head->previous_hash);
+    fprintf(out, "}\n");
     if(PRINT_SIGNATURES) {
-        printf("  Raw proof-of-work:\n");
-        print_pow(head->pow);
+        fprintf(out, "  Raw proof-of-work:\n");
+        fprint_pow(out, head->pow);
     }
-    putchar('\n');
+    fputc('\n', out);
 }
 
-void print_chain_recursive(chain_t *chain) {
+void fprint_chain_recursive(FILE *out, chain_t *chain) {
     if(chain->previous != NULL) {
-        print_chain_recursive(chain->previous);
+        fprint_chain_recursive(out, chain->previous);
     } else {
-        print_chain_tail(chain->tail);
+        fprint_chain_tail(out, chain->tail);
     }
-    print_chain(chain);
+    fprint_chain(out, chain);
 }
-void print_blockchain(chain_head_t *head) {
-    print_chain_recursive(head->previous);
-    print_chain_head(head);
+void fprint_blockchain(FILE *out, chain_head_t *head) {
+    fprint_chain_recursive(out, head->previous);
+    fprint_chain_head(out, head);
 }
-void print_pow(pow_t *pow) {
+void fprint_pow(FILE *out, pow_t *pow) {
     size_t cursor;
     for (cursor = 0; cursor < pow->pow_size / sizeof(buffer_chunk); cursor++) {
-        printf("%016lx ", ((buffer_chunk *)pow->pow)[cursor]);
+        fprintf(out, "%016lx ", ((buffer_chunk *)pow->pow)[cursor]);
         if (cursor % 2 == 1)
-            putchar('\n');
+            fputc('\n', out);
     }
-    putchar('\n');
+    fputc('\n', out);
 }
 
 
-void print_chain(chain_t *chain) {
-    printf("Chain:\n");
+void fprint_chain(FILE *out, chain_t *chain) {
+    fprintf(out, "Chain:\n");
     if (chain == NULL) {
-        printf("  NULL\n");
+        fprintf(out, "  NULL\n");
         return;
     }
-    printf("  Content of size  %lu\n", chain->content_size);
-    printf("  Previous         ");
+    fprintf(out, "  Content of size  %lu\n", chain->content_size);
+    fprintf(out, "  Previous         ");
     if (chain->previous == NULL) {
-        printf("Tail<");
+        fprintf(out, "Tail<");
         if (chain->tail == NULL) {
-            printf("NULL");
+            fprintf(out, "NULL");
         } else {
-            printf("%p", (void *)chain->tail);
+            fprintf(out, "%p", (void *)chain->tail);
         }
-        printf(">");
+        fprintf(out, ">");
     } else {
-        printf("Chain<%p>", (void *)chain->previous);
+        fprintf(out, "Chain<%p>", (void *)chain->previous);
     }
-    putchar('\n');
-    printf("  Timestamp        %lu\n", chain->timestamp);
-    print_signature(chain->signature);
-    putchar('\n');
-    printf("  Previous hash \n{\n");
-    print_hash(chain->previous_hash);
-    printf("}\n");
-    putchar('\n');
+    fputc('\n', out);
+    fprintf(out, "  Timestamp        %lu\n", chain->timestamp);
+    fprint_signature(out, chain->signature);
+    fputc('\n', out);
+    fprintf(out, "  Previous hash \n{\n");
+    fprint_hash(out, chain->previous_hash);
+    fprintf(out, "}\n");
+    fputc('\n', out);
 }
 
-void print_hash(hash_t hash) {
+void fprint_hash(FILE *out, hash_t hash) {
     size_t cursor;
-    printf("Hash <%p>\n", (void *)hash.digest);
+    fprintf(out, "Hash <%p>\n", (void *)hash.digest);
     if (hash.digest == NULL) {
-        printf("  NULL\n");
+        fprintf(out, "  NULL\n");
         return;
     }
     for (cursor = 0; cursor < DIGEST_WORDS; cursor++) {
-        printf("  %08x", hash.digest[cursor]);
+        fprintf(out, "  %08x", hash.digest[cursor]);
         if (cursor % 2 == 1) {
-            putchar('\n');
+            fputc('\n', out);
         }
     }
 }
 
-void print_4096_t(uint4096_t number) {
+void fprint_4096_t(FILE *out, uint4096_t number) {
     size_t iterator;
 
     for (iterator = 0; iterator < KEY_WORDS; iterator++) {
         if (number.contents == NULL) {
             /* so graceful */
-            printf("NULLNULLNULLNULL ");
+            fprintf(out, "NULLNULLNULLNULL ");
         } else {
             /* Print each word with a space */
-            printf("%016lx ", number.contents[S - 1 - iterator]);
+            fprintf(out, "%016lx ", number.contents[S - 1 - iterator]);
         }
         /* newline every other word for readability */
         if (iterator % 2 == 1) {
-            printf("\n");
+            fprintf(out, "\n");
         }
     }
     /* Cherry on top */
-    printf("\n");
+    fprintf(out, "\n");
 }

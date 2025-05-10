@@ -168,6 +168,8 @@ chain_t *chain_add(chain_t *chain, chain_content_t *content_to_add,
                    keyset_t *keyset);
 /* Add a head to a chain.*/
 chain_head_t *commit_chain(chain_t *chain, keyset_t *keyset);
+/* Get the number of a block given its filename */ bool
+get_block_number(char *filename, uint64_t *block_number, char *prefix);
 
 /* Serialization */
 
@@ -179,20 +181,28 @@ void export_blockchain(char *filename, chain_head_t *head);
 /* Printing functions */
 /* Print a chain item to the console */
 void print_chain(chain_t *chain);
+void fprint_chain(FILE *out, chain_t *chain);
 /* Print a chain head to the console */
 void print_chain_head(chain_head_t *head);
+void fprint_chain_head(FILE *out, chain_head_t *head);
 /* Recursively print a chain to the console */
 void print_blockchain(chain_head_t *head);
+void fprint_blockchain(FILE *out, chain_head_t *head);
 /* Print a chain tail to the console */
 void print_chain_tail(chain_tail_t *tail);
+void fprint_chain_tail(FILE *out, chain_tail_t *tail);
 /* Print a proof-of-work to the console */
 void print_pow(pow_t *pow);
+void fprint_pow(FILE *out, pow_t *pow);
 /* Print a hash to the console */
 void print_hash(hash_t to_print);
+void fprint_hash(FILE *out, hash_t to_print);
 /* Print a 4096-bit number to the console */
 void print_4096_t(uint4096_t number);
+void fprint_4096_t(FILE *out, uint4096_t number);
 /* Print a signature block to the console */
 void print_signature(signature_t signature);
+void fprint_signature(FILE *out, signature_t signature);
 
 /* Cryptography */
 
@@ -223,8 +233,8 @@ void free_keyset(keyset_t *keyset);
 /* Scripts */
 void write_genesis(char *filename, keyset_t *keyset);
 bool get_blocks(char *dirname, char *last_block_name, char *next_block_name);
-void add_to_blockchain(char *blockchain_directory,
-                       keyset_t *keyset, chain_content_t *content);
+void add_to_blockchain(char *blockchain_directory, keyset_t *keyset,
+                       chain_content_t *content);
 void do_day(char *blockchain_directory, keyset_t *keyset);
 
 #endif
