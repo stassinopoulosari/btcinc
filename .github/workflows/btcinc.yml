@@ -6,7 +6,7 @@ on:
         # Copy of existing schedule from macserver
         - cron: "0 13 * * *"
 jobs:
-    scrape:
+    blockchain:
         runs-on: ubuntu-latest
         steps:
             - name: Set default branch name to `main`
