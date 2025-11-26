@@ -1,0 +1,43 @@
+Chain tail:
+  Previous hash
+{
+Hash <0x5645f519f7f0>
+  743971dc  120b5646
+  acc5e5ae  cedc458a
+  273cdff3  a4def2ec
+  55f65d86  84222b7a
+}
+
+Chain:
+  Content of size  37
+  Previous         Tail<0x5645f50b6f00>
+  Timestamp        1764164164
+  Signature
+    Block<0x5645f58f06a0>
+    Public Key<0x5645f50b6080>
+  Previous hash 
+{
+Hash <0x5645f51a9fd0>
+  743971dc  120b5646
+  acc5e5ae  cedc458a
+  273cdff3  a4def2ec
+  55f65d86  84222b7a
+}
+
+Chain head:
+  Proof of work    pow<0x5645f50b6fa0>
+    Content of size 8
+  Previous         Chain<0x5645f50b6f20>
+  Timestamp        1764164174
+  Signature
+    Block<0x5645f5f161e0>
+    Public Key<0x5645f5f15fd0>    Public Key<0x5645f5f15fd0>
+  Previous hash 
+{
+Hash <0x5645f519f7c0>
+  7eb41ae6  048c77c9
+  85ed7eec  2eeff471
+  867e8a8b  d86efab6
+  a0d8077d  901ac11a
+}
+
